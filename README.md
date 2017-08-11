@@ -10,28 +10,21 @@ Use [phpstan](https://github.com/phpstan/phpstan) to lint your PHP source code w
 phpstan generates warning messages.
 
 Example output:
+```
+>>> Lint for src/AppBundle/Foo.php:
 
-    >>> Lint for src/index.ts:
 
-     Warning  (quotemark) tslint violation
-      ' should be "
+Error  () phpstan violation
+Error: AppBundle\Foo::__construct() does not
+call parent constructor from AppBundle\Bar.
 
-                14  *  under the License.
-                15  */
-                16
-      >>>       17 import $$observable from 'symbol-observable';
-                18
-                19 export default class IndefiniteObservable<T> implements Observable<T> {
-                20   _creator: Creator;
-
-     Warning  (semicolon) tslint violation
-      Missing semicolon
-
-                71 export type Unsubscribe = () => void;
-                72 export type Subscription = {
-                73   unsubscribe: Unsubscribe,
-      >>>       74 }
-
+          33      * constructor
+          34      */
+>>>       35     public function __construct()
+          36     {
+          37         Bar::__construct();
+          38         $this->property = 0;
+```
 ## Installation
 
 phpstan is required. Please follow [official instructions](https://github.com/phpstan/phpstan#installation) to install it.
