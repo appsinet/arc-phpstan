@@ -71,7 +71,9 @@ To use the linter you must register it in your `.arclint` file.
   "linters": {
     "phpstan": {
       "type": "phpstan",
-      "include": "(\\.php$)"
+      "include": "(\\.php$)",
+      "config": "var/build/phpstan.neon", /* optional */
+      "level": 0,/* optional */
     }
   }
 }
