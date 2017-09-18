@@ -140,7 +140,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
     {
         $result = array();
         if (null !== $stdout && '' !== $stdout) {
-            preg_match_all('/[a-zA-Z\/.]+:[0-99999]+:[a-zA-Z\/:_()= \\\\$.0-99999\[\]]+/m', $stdout, $messages);
+            preg_match_all('/[a-zA-Z\/.]+:[0-99999]+:[a-zA-Z\/:_#()= \\\\$.0-99999\[\]]+/m', $stdout, $messages);
             foreach ($messages[0] as $warning) {
                 $message = id(new ArcanistLintMessage())
                     ->setPath($path)
