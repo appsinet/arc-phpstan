@@ -124,15 +124,15 @@ final class PhpstanLinter extends ArcanistExternalLinter
     public function setLinterConfigurationValue($key, $value)
     {
         switch ($key) {
-            case 'config':
-                $this->configFile = $value;
-                return;
-            case 'level':
-                $this->level = $value;
-                return;
-            default:
-                parent::setLinterConfigurationValue($key, $value);
-                return;
+        case 'config':
+            $this->configFile = $value;
+            return;
+        case 'level':
+            $this->level = $value;
+            return;
+        default:
+            parent::setLinterConfigurationValue($key, $value);
+            return;
         }
     }
 
@@ -140,11 +140,12 @@ final class PhpstanLinter extends ArcanistExternalLinter
     {
         $result = array();
         if (null !== $stdout && '' !== $stdout) {
-            preg_match_all('/[a-zA-Z\/.]+:[0-99999]+:[a-zA-Z\/:_()= \\\\$.0-99999\[\]]+/m', $stdout, $messages);
+            preg_match_all('/[a-zA-Z\/.]+:[0-99999]+:[a-zA-Z\/:_#\'()= \\\\$.0-99999\[\]]+/m', $stdout, $messages);
             foreach ($messages[0] as $warning) {
                 $message = id(new ArcanistLintMessage())
                     ->setPath($path)
                     ->setName('phpstan violation')
+                    ->setCode('phpstan')
                     ->setSeverity(ArcanistLintSeverity::SEVERITY_DISABLED);
                 $fileEnd = strpos($warning, ':');
                 $lineIni = strpos($warning, ':', $fileEnd) + 1;
