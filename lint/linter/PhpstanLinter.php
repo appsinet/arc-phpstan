@@ -29,6 +29,11 @@ final class PhpstanLinter extends ArcanistExternalLinter
      */
     private $level = 'max';
 
+    /**
+     * @var string Autoload file path
+     */
+    private $autoloadFile = null;
+
     public function getInfoName()
     {
         return 'phpstan';
@@ -77,6 +82,26 @@ final class PhpstanLinter extends ArcanistExternalLinter
         }
     }
 
+    protected function getMandatoryFlags()
+    {
+        $flags = array(
+            'analyse',
+            '--no-progress',
+            '--errorFormat=raw'
+        );
+        if (null !== $this->configFile) {
+            array_push($flags, '-c', $this->configFile);
+        }
+        if (null !== $this->level) {
+            array_push($flags, '-l', $this->level);
+        }
+        if (null !== $this->autoloadFile) {
+            array_push($flags, '-a', $this->autoloadFile);
+        }
+
+        return $flags;
+    }
+
     public function getLinterConfigurationOptions()
     {
         $options = array(
@@ -92,6 +117,11 @@ final class PhpstanLinter extends ArcanistExternalLinter
                     'Rule level used (0 loosest - max strictest). Will be provided as -l <level> to phpstan.'
                 ),
             ),
+            'autoload' => array(
+                'type' => 'optional string',
+                'help' => pht(
+                    'The path to the auto load file. Will be provided as -a <autoload_file> to phpstan.'),
+            ),
         );
         return $options + parent::getLinterConfigurationOptions();
     }
@@ -99,38 +129,24 @@ final class PhpstanLinter extends ArcanistExternalLinter
     public function setLinterConfigurationValue($key, $value)
     {
         switch ($key) {
-            case 'config':
-                $this->configFile = $value;
-                return;
-            case 'level':
-                $this->level = $value;
-                return;
-            default:
-                parent::setLinterConfigurationValue($key, $value);
-                return;
+        case 'config':
+            $this->configFile = $value;
+            return;
+        case 'level':
+            $this->level = $value;
+            return;
+        case 'autoload':
+            $this->autoloadFile = $value;
+            return;
+        default:
+            parent::setLinterConfigurationValue($key, $value);
+            return;
         }
     }
 
     protected function getDefaultMessageSeverity($code)
     {
         return ArcanistLintSeverity::SEVERITY_WARNING;
-    }
-
-    protected function getMandatoryFlags()
-    {
-        $flags = array(
-            'analyse',
-            '--no-progress',
-            '--errorFormat=checkstyle'
-        );
-        if (null !== $this->configFile) {
-            array_push($flags, '-c', $this->configFile);
-        }
-        if (null !== $this->level) {
-            array_push($flags, '-l', $this->level);
-        }
-
-        return $flags;
     }
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr)
