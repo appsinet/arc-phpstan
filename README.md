@@ -1,4 +1,4 @@
-Based on [material-foundation/arc-tslint](https://github.com/material-foundation/arc-tslint). Provides basic support for `arc lint` to execute `phpstan`.
+Based on [material-foundation/arc-tslint](https://github.com/material-foundation/arc-tslint) and some improvements made in [sascha-egerer/arc-phpstan](https://github.com/sascha-egerer/arc-phpstan). Provides basic support for `arc lint` to execute `phpstan`.
 
 # arc-phpstan
 
@@ -27,7 +27,7 @@ call parent constructor from AppBundle\Bar.
 ```
 ## Installation
 
-phpstan is required. Please follow [official instructions](https://github.com/phpstan/phpstan#installation) to install it.
+phpstan is required. You can follow the [official instructions](https://github.com/phpstan/phpstan#installation) to install and put it on your $PATH, or you can run composer `install` and point the `bin` option to `vendor/bin/phpstan`, as in the example below.
 
 ### Project-specific installation
 
@@ -64,7 +64,7 @@ Your `.arcconfig` would look like
 
 ## Setup
 
-To use the linter you must register it in your `.arclint` file.
+To use the linter you must register it in your `.arclint` file, as in this example
 
 ```json
 {
@@ -73,7 +73,8 @@ To use the linter you must register it in your `.arclint` file.
       "type": "phpstan",
       "include": "(\\.php$)",
       "config": "var/build/phpstan.neon", /* optional */
-      "level": 0,/* optional */
+      "bin": "vendor/bin/phpstan", /* optional */
+      "level": 0 /* optional */
     }
   }
 }
