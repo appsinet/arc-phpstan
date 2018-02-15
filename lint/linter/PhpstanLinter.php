@@ -153,6 +153,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
     {
         $result = array();
         if (!empty($stdout)) {
+            $stdout = substr($stdout, strpos($stdout, '<?xml'));
             $checkstyleOutpout = new SimpleXMLElement($stdout);
             $errors = $checkstyleOutpout->xpath('//file/error');
             foreach($errors as $error) {
