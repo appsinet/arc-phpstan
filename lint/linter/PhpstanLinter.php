@@ -87,7 +87,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
         $flags = array(
             'analyse',
             '--no-progress',
-            '--errorFormat=raw'
+            '--errorFormat=checkstyle'
         );
         if (null !== $this->configFile) {
             array_push($flags, '-c', $this->configFile);
@@ -153,6 +153,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
     {
         $result = array();
         if (!empty($stdout)) {
+            $stdout = substr($stdout, strpos($stdout, '<?xml'));
             $checkstyleOutpout = new SimpleXMLElement($stdout);
             $errors = $checkstyleOutpout->xpath('//file/error');
             foreach($errors as $error) {
