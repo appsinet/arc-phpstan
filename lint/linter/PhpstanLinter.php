@@ -87,7 +87,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
         $flags = array(
             'analyse',
             '--no-progress',
-            '--errorFormat=checkstyle'
+            '--error-format=checkstyle'
         );
         if (null !== $this->configFile) {
             array_push($flags, '-c', $this->configFile);
