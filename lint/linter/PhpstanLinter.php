@@ -27,7 +27,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
     /**
      * @var string Rule level
      */
-    private $level = 'max';
+    private $level = null;
 
     /**
      * @var string Autoload file path
@@ -112,7 +112,7 @@ final class PhpstanLinter extends ArcanistExternalLinter
                 ),
             ),
             'level' => array(
-                'type' => 'optional int',
+                'type' => 'optional string',
                 'help' => pht(
                     'Rule level used (0 loosest - max strictest). Will be provided as -l <level> to phpstan.'
                 ),
