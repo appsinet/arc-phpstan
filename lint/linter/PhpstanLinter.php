@@ -102,6 +102,22 @@ final class PhpstanLinter extends ArcanistExternalLinter
         return $flags;
     }
 
+    protected function getDependencyFlags()
+    {
+        $flags = array(
+            'dump-deps',
+            '--no-progress',
+        );
+        if (null !== $this->configFile) {
+            array_push($flags, '-c', $this->configFile);
+        }
+        if (null !== $this->autoloadFile) {
+            array_push($flags, '-a', $this->autoloadFile);
+        }
+
+        return $flags;
+    }
+
     public function getLinterConfigurationOptions()
     {
         $options = array(
@@ -129,18 +145,18 @@ final class PhpstanLinter extends ArcanistExternalLinter
     public function setLinterConfigurationValue($key, $value)
     {
         switch ($key) {
-        case 'config':
-            $this->configFile = $value;
-            return;
-        case 'level':
-            $this->level = $value;
-            return;
-        case 'autoload':
-            $this->autoloadFile = $value;
-            return;
-        default:
-            parent::setLinterConfigurationValue($key, $value);
-            return;
+            case 'config':
+                $this->configFile = $value;
+                return;
+            case 'level':
+                $this->level = $value;
+                return;
+            case 'autoload':
+                $this->autoloadFile = $value;
+                return;
+            default:
+                parent::setLinterConfigurationValue($key, $value);
+                return;
         }
     }
 
@@ -151,15 +167,21 @@ final class PhpstanLinter extends ArcanistExternalLinter
 
     protected function parseLinterOutput($path, $err, $stdout, $stderr)
     {
+        if ($err === 0) {
+            return array();
+        }
+
         $result = array();
         if (!empty($stdout)) {
             $stdout = substr($stdout, strpos($stdout, '<?xml'));
             $checkstyleOutpout = new SimpleXMLElement($stdout);
-            $errors = $checkstyleOutpout->xpath('//file/error');
-            foreach($errors as $error) {
-                    $violation = $this->parseViolation($error);
-                    $violation['path'] = $path;
+            $files = $checkstyleOutpout->xpath('//file');
+            foreach ($files as $file) {
+                $path = (string)$file['name'];
+                foreach($file->error as $error) {
+                    $violation = $this->parseViolation($error, $path);
                     $result[] = ArcanistLintMessage::newFromDictionary($violation);
+                }
             }
         }
 
@@ -177,23 +199,25 @@ final class PhpstanLinter extends ArcanistExternalLinter
      * </checkstyle>
      *
      * Of this, we need to extract
-    *   - Line
+     *   - Line
      *   - Column
      *   - Severity
      *   - Message
-     *   - Source (name)
      *
      * @param SimpleXMLElement $violation The XML Entity containing the issue
      *
      * @return array of the form
      * [
+     *   'code' => {string},
+     *   'name' => {string},
      *   'line' => {int},
-    *   'column' => {int},
+     *   'char' => {int},
      *   'severity' => {string},
-     *   'message' => {string}
+     *   'description' => {string},
+     *   'path' => {string}
      * ]
      */
-    private function parseViolation(SimpleXMLElement $violation)
+    private function parseViolation(SimpleXMLElement $violation, $path)
     {
         return array(
             'code' => $this->getLinterName(),
@@ -201,7 +225,8 @@ final class PhpstanLinter extends ArcanistExternalLinter
             'line' => (int)$violation['line'],
             'char' => (int)$violation['column'],
             'severity' => $this->getMatchSeverity((string)$violation['severity']),
-            'description' => (string)$violation['message']
+            'description' => (string)$violation['message'],
+            'path' => (string)$path,
         );
     }
 
@@ -226,16 +251,84 @@ final class PhpstanLinter extends ArcanistExternalLinter
      */
     private function getMatchSeverity($severity_name)
     {
-            $map = array(
-                    'error' => ArcanistLintSeverity::SEVERITY_ERROR,
-                    'warning' => ArcanistLintSeverity::SEVERITY_WARNING,
-                    'info' => ArcanistLintSeverity::SEVERITY_ADVICE,
-                );
-            foreach ($map as $name => $severity) {
-                    if ($severity_name == $name) {
-                            return $severity;
+        $map = array(
+            'error' => ArcanistLintSeverity::SEVERITY_ERROR,
+            'warning' => ArcanistLintSeverity::SEVERITY_WARNING,
+            'info' => ArcanistLintSeverity::SEVERITY_ADVICE,
+        );
+        foreach ($map as $name => $severity) {
+            if ($severity_name == $name) {
+                return $severity;
             }
         }
         return ArcanistLintSeverity::SEVERITY_ERROR;
     }
+
+    public function willLintPaths(array $paths)
+    {
+        $dependentPaths = $this->getDependentPaths($paths);
+
+        $commandFlags = $this->getCommandFlagsWithPaths(array_merge($paths, $dependentPaths));
+
+        list($err, $stdout, $stderr) = exec_manual('%C %Ls', $this->getExecutableCommand(), $commandFlags);
+
+        $messages = $this->parseLinterOutput('unused', $err, $stdout, $stderr);
+
+        foreach ($messages as $message) {
+            $this->addLintMessage($message);
+        }
+
+        return;
+    }
+
+    public function didLintPaths(array $paths)
+    {
+        return;
+    }
+
+    /**
+     * @param array $paths
+     * @return array
+     */
+    private function getDependentPaths(array $paths)
+    {
+        list($stdout, $stderr) = execx('%C %Ls', $this->getExecutableCommand(), $this->getDependencyFlags());
+        $dependencies = json_decode($stdout);
+
+        $root = $this->getProjectRoot();
+
+        $additionalPaths = array();
+        foreach ($paths as $pathToLint) {
+            $fullPathToLint = Filesystem::resolvePath($pathToLint, $root);
+
+            $additionalPaths = array_merge($additionalPaths, $dependencies->$fullPathToLint);
+        }
+
+        $additionalPaths = array_unique($additionalPaths);
+
+        $additionalPaths = array_map(
+            function ($path) use ($root) {
+                return str_replace($root . '/', '', $path);
+            },
+            $additionalPaths
+        );
+
+        return $additionalPaths;
+    }
+
+    /**
+     * @param $allPathsToLint
+     * @return array
+     */
+    private function getCommandFlagsWithPaths($allPathsToLint)
+    {
+        $commandFlags = $this->getCommandFlags();
+        $commandFlags[] = '--';
+        foreach (array_unique($allPathsToLint) as $pathToLint) {
+            $commandFlags[] = $pathToLint;
+        }
+
+        return $commandFlags;
+    }
+
 }
