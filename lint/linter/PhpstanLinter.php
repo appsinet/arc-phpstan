@@ -301,7 +301,9 @@ final class PhpstanLinter extends ArcanistExternalLinter
         foreach ($paths as $pathToLint) {
             $fullPathToLint = Filesystem::resolvePath($pathToLint, $root);
 
-            $additionalPaths = array_merge($additionalPaths, $dependencies->$fullPathToLint);
+            if (property_exists($dependencies, $fullPathToLint)) {
+                $additionalPaths = array_merge($additionalPaths, $dependencies->$fullPathToLint);
+            }
         }
 
         $additionalPaths = array_unique($additionalPaths);
