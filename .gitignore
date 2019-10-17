@@ -1,4 +1,3 @@
 .phutil_module_cache
-composer.lock
 vendor
 .idea
