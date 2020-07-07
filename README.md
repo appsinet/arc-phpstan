@@ -1,4 +1,5 @@
 ![OSSAR](https://github.com/appsinet/arc-phpstan/workflows/OSSAR/badge.svg)
+
 Based on [material-foundation/arc-tslint](https://github.com/material-foundation/arc-tslint) and some improvements made in [sascha-egerer/arc-phpstan](https://github.com/sascha-egerer/arc-phpstan). Provides basic support for `arc lint` to execute `phpstan`.
 
 # arc-phpstan
