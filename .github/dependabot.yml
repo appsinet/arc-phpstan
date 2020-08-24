@@ -9,7 +9,7 @@ updates:
     directory: "/"
     # Check composer for updates every day (weekdays)
     schedule:
-      interval: "daily"
+      interval: "monthly"
     reviewers:
       - "cmmata"
     commit-message:
