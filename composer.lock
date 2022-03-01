@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "phpstan/phpstan",
-            "version": "1.4.4",
+            "version": "1.4.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "f7409da1e26c6dee172cce744034b869a2f27a9e"
+                "reference": "8a7761f1c520e0dad6e04d862fdc697445457cfe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/f7409da1e26c6dee172cce744034b869a2f27a9e",
-                "reference": "f7409da1e26c6dee172cce744034b869a2f27a9e",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/8a7761f1c520e0dad6e04d862fdc697445457cfe",
+                "reference": "8a7761f1c520e0dad6e04d862fdc697445457cfe",
                 "shasum": ""
             },
             "require": {
@@ -64,7 +64,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2022-01-31T16:50:49+00:00"
+            "time": "2022-02-06T12:56:13+00:00"
         }
     ],
     "packages-dev": [],
